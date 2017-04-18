@@ -33,9 +33,10 @@ int datapin = 2;
 int clockpin = 3;
 int latchpin = 4;
 byte data = 0;
+int speed = 30;
 
 void setup() {
-  pinMode(datapin, OUTPUT);
+  pinMode(datapin, INPUT);
   pinMode(clockpin, OUTPUT);
   pinMode(latchpin, OUTPUT);
   pinMode(H1,OUTPUT);
@@ -53,12 +54,38 @@ void setup() {
   pinMode(L8,OUTPUT);
 }
 
+// This code is intended to trigger the shift register to grab values from it's A-H inputs
+byte shiftRead()
+{
+  pinMode(datapin, INPUT);
+  byte the_shifted = 0;  // An 8 bit number to carry each bit value of A-H
+
+  // Trigger loading the state of the A-H data lines into the shift register
+  digitalWrite(shld_pin, LOW);
+  delayMicroseconds(5); // Requires a delay here according to the datasheet timing diagram
+  digitalWrite(shld_pin, HIGH);
+  delayMicroseconds(5);
+
+  // Required initial states of these two pins according to the datasheet timing diagram
+  pinMode(clk_pin, OUTPUT);
+  pinMode(data_pin, INPUT);
+  digitalWrite(clk_pin, HIGH);
+  digitalWrite(ce_pin, LOW); // Enable the clock
+
+  // Get the A-H values
+  the_shifted = shiftIn(data_pin, clk_pin, MSBFIRST);
+  digitalWrite(ce_pin, HIGH); // Disable the clock
+  return the_shifted;
+}
+
 // write to shift register outputs
 void shiftWrite(int desiredPin, boolean desiredState) {
+  pinMode(datapin, OUTPUT);
   bitWrite(data,desiredPin,desiredState);
   shiftOut(datapin, clockpin, MSBFIRST, data);
   digitalWrite(latchpin, HIGH);
   digitalWrite(latchpin, LOW);
+  pinMode(datapin, INPUT);
 }
 
 // clear display
@@ -99,7 +126,7 @@ void loop() {
         drawPoints(table, points, 1);
       }
       Display(table);
-      ClearTable();
+      //ClearTable();
     }
   }
   ClearTable();
