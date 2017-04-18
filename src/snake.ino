@@ -55,28 +55,28 @@ void setup() {
 }
 
 // This code is intended to trigger the shift register to grab values from it's A-H inputs
-byte shiftRead()
-{
-  pinMode(datapin, INPUT);
-  byte the_shifted = 0;  // An 8 bit number to carry each bit value of A-H
-
-  // Trigger loading the state of the A-H data lines into the shift register
-  digitalWrite(shld_pin, LOW);
-  delayMicroseconds(5); // Requires a delay here according to the datasheet timing diagram
-  digitalWrite(shld_pin, HIGH);
-  delayMicroseconds(5);
-
-  // Required initial states of these two pins according to the datasheet timing diagram
-  pinMode(clk_pin, OUTPUT);
-  pinMode(data_pin, INPUT);
-  digitalWrite(clk_pin, HIGH);
-  digitalWrite(ce_pin, LOW); // Enable the clock
-
-  // Get the A-H values
-  the_shifted = shiftIn(data_pin, clk_pin, MSBFIRST);
-  digitalWrite(ce_pin, HIGH); // Disable the clock
-  return the_shifted;
-}
+// byte shiftRead()
+// {
+//   pinMode(datapin, INPUT);
+//   byte the_shifted = 0;  // An 8 bit number to carry each bit value of A-H
+//
+//   // Trigger loading the state of the A-H data lines into the shift register
+//   digitalWrite(shld_pin, LOW);
+//   delayMicroseconds(5); // Requires a delay here according to the datasheet timing diagram
+//   digitalWrite(shld_pin, HIGH);
+//   delayMicroseconds(5);
+//
+//   // Required initial states of these two pins according to the datasheet timing diagram
+//   pinMode(clk_pin, OUTPUT);
+//   pinMode(data_pin, INPUT);
+//   digitalWrite(clk_pin, HIGH);
+//   digitalWrite(ce_pin, LOW); // Enable the clock
+//
+//   // Get the A-H values
+//   the_shifted = shiftIn(data_pin, clk_pin, MSBFIRST);
+//   digitalWrite(ce_pin, HIGH); // Disable the clock
+//   return the_shifted;
+// }
 
 // write to shift register outputs
 void shiftWrite(int desiredPin, boolean desiredState) {
