@@ -1,22 +1,26 @@
 #include <Arduino.h>
 
-#define H1 11
-#define H2 0
-#define H3 7
-#define H4 8
-#define H5 2
-#define H6 6
-#define H7 1
-#define H8 5
+// Rows
+#define R1 8
+#define R2 6 //shift
+#define R3 A4
+#define R4 0 //shift
+#define R5 11
+#define R6 A5
+#define R7 1 //shift
+#define R8 9
+// Cols
+#define C1 7 //shift
+#define C2 2 //shift
+#define C3 3 //shift
+#define C4 7
+#define C5 10
+#define C6 6
+#define C7 5 //shift
+#define C8 4 //shift
 
-#define L1 A3
-#define L2 A2
-#define L3 A1
-#define L4 10
-#define L5 A0
-#define L6 9
-#define L7 A4
-#define L8 A5
+#define B1 A3
+#define B2 A2
 
 unsigned char table[8][8] = {
   0,0,0,0,0,0,0,0,
@@ -36,47 +40,32 @@ byte data = 0;
 int speed = 30;
 
 void setup() {
+  //shift register
   pinMode(datapin, INPUT);
   pinMode(clockpin, OUTPUT);
   pinMode(latchpin, OUTPUT);
-  pinMode(H1,OUTPUT);
-  pinMode(H3,OUTPUT);
-  pinMode(H4,OUTPUT);
-  pinMode(H6,OUTPUT);
-  pinMode(H8,OUTPUT);
-  pinMode(L1,OUTPUT);
-  pinMode(L2,OUTPUT);
-  pinMode(L3,OUTPUT);
-  pinMode(L4,OUTPUT);
-  pinMode(L5,OUTPUT);
-  pinMode(L6,OUTPUT);
-  pinMode(L7,OUTPUT);
-  pinMode(L8,OUTPUT);
+  //rows
+  pinMode(R1, OUTPUT);
+  pinMode(R2, OUTPUT);
+  pinMode(R3, OUTPUT);
+  pinMode(R4, OUTPUT);
+  pinMode(R5, OUTPUT);
+  pinMode(R6, OUTPUT);
+  pinMode(R7, OUTPUT);
+  pinMode(R8, OUTPUT);
+  //cols
+  pinMode(C1, OUTPUT);
+  pinMode(C2, OUTPUT);
+  pinMode(C3, OUTPUT);
+  pinMode(C4, OUTPUT);
+  pinMode(C5, OUTPUT);
+  pinMode(C6, OUTPUT);
+  pinMode(C7, OUTPUT);
+  pinMode(C8, OUTPUT);
+  //buttons
+  pinMode(B1, INPUT);
+  pinMode(B2, INPUT);
 }
-
-// This code is intended to trigger the shift register to grab values from it's A-H inputs
-// byte shiftRead()
-// {
-//   pinMode(datapin, INPUT);
-//   byte the_shifted = 0;  // An 8 bit number to carry each bit value of A-H
-//
-//   // Trigger loading the state of the A-H data lines into the shift register
-//   digitalWrite(shld_pin, LOW);
-//   delayMicroseconds(5); // Requires a delay here according to the datasheet timing diagram
-//   digitalWrite(shld_pin, HIGH);
-//   delayMicroseconds(5);
-//
-//   // Required initial states of these two pins according to the datasheet timing diagram
-//   pinMode(clk_pin, OUTPUT);
-//   pinMode(data_pin, INPUT);
-//   digitalWrite(clk_pin, HIGH);
-//   digitalWrite(ce_pin, LOW); // Enable the clock
-//
-//   // Get the A-H values
-//   the_shifted = shiftIn(data_pin, clk_pin, MSBFIRST);
-//   digitalWrite(ce_pin, HIGH); // Disable the clock
-//   return the_shifted;
-// }
 
 // write to shift register outputs
 void shiftWrite(int desiredPin, boolean desiredState) {
@@ -90,23 +79,23 @@ void shiftWrite(int desiredPin, boolean desiredState) {
 
 // clear display
 void Clear() {
-  digitalWrite(H1,LOW);
-  shiftWrite(H2,false);
-  digitalWrite(H3,LOW);
-  digitalWrite(H4,LOW);
-  shiftWrite(H5,false);
-  digitalWrite(H6,LOW);
-  shiftWrite(H7,false);
-  digitalWrite(H8,LOW);
+  digitalWrite(R1, LOW);
+  shiftWrite(R2, false);
+  digitalWrite(R3, LOW);
+  shiftWrite(R4, false);
+  digitalWrite(R5, LOW);
+  digitalWrite(R6, LOW);
+  shiftWrite(R7, false);
+  digitalWrite(R8, LOW);
 
-  digitalWrite(L1,HIGH);
-  digitalWrite(L2,HIGH);
-  digitalWrite(L3,HIGH);
-  digitalWrite(L4,HIGH);
-  digitalWrite(L5,HIGH);
-  digitalWrite(L6,HIGH);
-  digitalWrite(L7,HIGH);
-  digitalWrite(L8,HIGH);
+  shiftWrite(C1, true);
+  shiftWrite(C2, true);
+  shiftWrite(C3, true);
+  digitalWrite(C4, HIGH);
+  digitalWrite(C5, HIGH);
+  digitalWrite(C6, HIGH);
+  shiftWrite(C7, true);
+  shiftWrite(C8, true);
 }
 
 // set all elements of table to 0
@@ -119,17 +108,60 @@ void ClearTable() {
 }
 
 void loop() {
-  for (int i = 0 ; i < 8 ; i++) {
-    for (int j = 0 ; j < 8 ; j++) {
-      for (int k = 0 ; k < speed ; k++) {
-        int points[1][2] = {i, j};
-        drawPoints(table, points, 1);
+  int b1 = digitalRead(B1);
+  int b2 = digitalRead(B2);
+  if (b1 == LOW && b2 == LOW) {
+    for (int i = 0 ; i < 8 ; i++) {
+      for (int j = 0 ; j < 8 ; j++) {
+        for (int k = 0 ; k < speed ; k++) {
+          int points[1][2] = {i, j};
+          drawPoints(table, points, 1);
+        }
+        Display(table);
+        //ClearTable();
       }
-      Display(table);
-      //ClearTable();
     }
+    ClearTable();
   }
-  ClearTable();
+  if (b1 == HIGH && b2 == LOW) {
+    for (int i = 7 ; i >= 0 ; i--) {
+      for (int j = 0 ; j < 8 ; j++) {
+        for (int k = 0 ; k < speed ; k++) {
+          int points[1][2] = {i, j};
+          drawPoints(table, points, 1);
+        }
+        Display(table);
+        //ClearTable();
+      }
+    }
+    ClearTable();
+  }
+  if (b1 == HIGH && b2 == HIGH) {
+    // for (int i = 7 ; i >= 0 ; i--) {
+    //   for (int j = 7 ; j >= 0 ; j--) {
+    //     for (int k = 0 ; k < speed ; k++) {
+    //       int points[1][2] = {i, j};
+    //       drawPoints(table, points, 1);
+    //     }
+    //     Display(table);
+    //     //ClearTable();
+    //   }
+    // }
+    ClearTable();
+  }
+  if (b1 == LOW && b2 == HIGH) {
+    for (int i = 0 ; i < 8 ; i++) {
+      for (int j = 7 ; j >= 0 ; j--) {
+        for (int k = 0 ; k < speed ; k++) {
+          int points[1][2] = {i, j};
+          drawPoints(table, points, 1);
+        }
+        Display(table);
+        //ClearTable();
+      }
+    }
+    ClearTable();
+  }
 }
 
 // add points to draw
@@ -143,103 +175,101 @@ void drawPoints(unsigned char dat[8][8], int points[][2], int n) {
 
 // display function
 void Display(unsigned char dat[8][8]) {
-
   int delayTime = 1;
 
-
-  digitalWrite(L1,LOW); //select 1th row
-  digitalWrite(H1,dat[0][0]);
-  shiftWrite(H2,dat[1][0] == 1);
-  digitalWrite(H3,dat[2][0]);
-  digitalWrite(H4,dat[3][0]);
-  shiftWrite(H5,dat[4][0] == 1);
-  digitalWrite(H6,dat[5][0]);
-  shiftWrite(H7,dat[6][0] == 1);
-  digitalWrite(H8,dat[7][0]);
+  shiftWrite(C1, false); //select 1th col
+  digitalWrite(R1, dat[0][0]);
+  shiftWrite(R2, dat[1][0] == 1);
+  digitalWrite(R3, dat[2][0]);
+  shiftWrite(R4, dat[3][0] == 1);
+  digitalWrite(R5, dat[4][0]);
+  digitalWrite(R6, dat[5][0]);
+  shiftWrite(R7, dat[6][0] == 1);
+  digitalWrite(R8, dat[7][0]);
   delay(delayTime); //Wait LED is lit.
   Clear();  //Clear shadow
 
-  digitalWrite(L2,LOW); //select 2th row
-  digitalWrite(H1,dat[0][1]);
-  shiftWrite(H2,dat[1][1] == 1);
-  digitalWrite(H3,dat[2][1]);
-  digitalWrite(H4,dat[3][1]);
-  shiftWrite(H5,dat[4][1] == 1);
-  digitalWrite(H6,dat[5][1]);
-  shiftWrite(H7,dat[6][1] == 1);
-  digitalWrite(H8,dat[7][1]);
+  shiftWrite(C2, false); //select 2th col
+  digitalWrite(R1, dat[0][1]);
+  shiftWrite(R2, dat[1][1] == 1);
+  digitalWrite(R3, dat[2][1]);
+  shiftWrite(R4, dat[3][1] == 1);
+  digitalWrite(R5, dat[4][1]);
+  digitalWrite(R6, dat[5][1]);
+  shiftWrite(R7, dat[6][1] == 1);
+  digitalWrite(R8, dat[7][1]);
   delay(delayTime);
   Clear();
 
-  digitalWrite(L3,LOW); //select 3th row
-  digitalWrite(H1,dat[0][2]);
-  shiftWrite(H2,dat[1][2] == 1);
-  digitalWrite(H3,dat[2][2]);
-  digitalWrite(H4,dat[3][2]);
-  shiftWrite(H5,dat[4][2] == 1);
-  digitalWrite(H6,dat[5][2]);
-  shiftWrite(H7,dat[6][2] == 1);
-  digitalWrite(H8,dat[7][2]);
+  shiftWrite(C3, false); //select 3th col
+  digitalWrite(R1, dat[0][2]);
+  shiftWrite(R2, dat[1][2] == 1);
+  digitalWrite(R3, dat[2][2]);
+  shiftWrite(R4, dat[3][2] == 1);
+  digitalWrite(R5, dat[4][2]);
+  digitalWrite(R6, dat[5][2]);
+  shiftWrite(R7, dat[6][2] == 1);
+  digitalWrite(R8, dat[7][2]);
   delay(delayTime);
   Clear();
 
-  digitalWrite(L4,LOW); //select 4th row
-  digitalWrite(H1,dat[0][3]);
-  shiftWrite(H2,dat[1][3] == 1);
-  digitalWrite(H3,dat[2][3]);
-  digitalWrite(H4,dat[3][3]);
-  shiftWrite(H5,dat[4][3] == 1);
-  digitalWrite(H6,dat[5][3]);
-  shiftWrite(H7,dat[6][3] == 1);
-  digitalWrite(H8,dat[7][3]);
+  digitalWrite(C4,LOW); //select 4th col
+  digitalWrite(R1, dat[0][3]);
+  shiftWrite(R2, dat[1][3] == 1);
+  digitalWrite(R3, dat[2][3]);
+  shiftWrite(R4, dat[3][3] == 1);
+  digitalWrite(R5, dat[4][3]);
+  digitalWrite(R6, dat[5][3]);
+  shiftWrite(R7, dat[6][3] == 1);
+  digitalWrite(R8, dat[7][3]);
   delay(delayTime);
   Clear();
 
-  digitalWrite(L5,LOW); //select 5th row
-  digitalWrite(H1,dat[0][4]);
-  shiftWrite(H2,dat[1][4] == 1);
-  digitalWrite(H3,dat[2][4]);
-  digitalWrite(H4,dat[3][4]);
-  shiftWrite(H5,dat[4][4] == 1);
-  digitalWrite(H6,dat[5][4]);
-  shiftWrite(H7,dat[6][4] == 1);
-  digitalWrite(H8,dat[7][4]);
+  digitalWrite(C5,LOW); //select 5th col
+  digitalWrite(R1, dat[0][4]);
+  shiftWrite(R2, dat[1][4] == 1);
+  digitalWrite(R3, dat[2][4]);
+  shiftWrite(R4, dat[3][4] == 1);
+  digitalWrite(R5, dat[4][4]);
+  digitalWrite(R6, dat[5][4]);
+  shiftWrite(R7, dat[6][4] == 1);
+  digitalWrite(R8, dat[7][4]);
   delay(delayTime);
   Clear();
 
-  digitalWrite(L6,LOW); //select 6th row
-  digitalWrite(H1,dat[0][5]);
-  shiftWrite(H2,dat[1][5] == 1);
-  digitalWrite(H3,dat[2][5]);
-  digitalWrite(H4,dat[3][5]);
-  shiftWrite(H5,dat[4][5] == 1);
-  digitalWrite(H6,dat[5][5]);
-  shiftWrite(H7,dat[6][5] == 1);
-  digitalWrite(H8,dat[7][5]);
+  digitalWrite(C6,LOW); //select 6th col
+  digitalWrite(R1, dat[0][5]);
+  shiftWrite(R2, dat[1][5] == 1);
+  digitalWrite(R3, dat[2][5]);
+  shiftWrite(R4, dat[3][5] == 1);
+  digitalWrite(R5, dat[4][5]);
+  digitalWrite(R6, dat[5][5]);
+  shiftWrite(R7, dat[6][5] == 1);
+  digitalWrite(R8, dat[7][5]);
   delay(delayTime);
   Clear();
 
-  digitalWrite(L7,LOW); //select 7th row
-  digitalWrite(H1,dat[0][6]);
-  shiftWrite(H2,dat[1][6] == 1);
-  digitalWrite(H3,dat[2][6]);
-  digitalWrite(H4,dat[3][6]);
-  shiftWrite(H5,dat[4][6] == 1);
-  digitalWrite(H6,dat[5][6]);
-  shiftWrite(H7,dat[6][6] == 1);
-  digitalWrite(H8,dat[7][6]);
+  shiftWrite(C7, false); //select 7th col
+  digitalWrite(R1, dat[0][6]);
+  shiftWrite(R2, dat[1][6] == 1);
+  digitalWrite(R3, dat[2][6]);
+  shiftWrite(R4, dat[3][6] == 1);
+  digitalWrite(R5, dat[4][6]);
+  digitalWrite(R6, dat[5][6]);
+  shiftWrite(R7, dat[6][6] == 1);
+  digitalWrite(R8, dat[7][6]);
   delay(delayTime);
   Clear();
 
-  digitalWrite(L8,LOW); //select 8th row
-  digitalWrite(H1,dat[0][7]);
-  shiftWrite(H2,dat[1][7] == 1);
-  digitalWrite(H3,dat[2][7]);
-  digitalWrite(H4,dat[3][7]);
-  shiftWrite(H5,dat[4][7] == 1);
-  digitalWrite(H6,dat[5][7]);
-  shiftWrite(H7,dat[6][7] == 1);
-  digitalWrite(H8,dat[7][7]);
+  shiftWrite(C8, false); //select 8th col
+  digitalWrite(R1, dat[0][7]);
+  shiftWrite(R2, dat[1][7] == 1);
+  digitalWrite(R3, dat[2][7]);
+  shiftWrite(R4, dat[3][7] == 1);
+  digitalWrite(R5, dat[4][7]);
+  digitalWrite(R6, dat[5][7]);
+  shiftWrite(R7, dat[6][7] == 1);
+  digitalWrite(R8, dat[7][7]);
   delay(delayTime);
   Clear();
 }
